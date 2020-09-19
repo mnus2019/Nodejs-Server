@@ -8,6 +8,7 @@ campsiteRouter.use(bodyParser.json());
 
 campsiteRouter.route('/')
 .get((req, res, next) => {
+ 
     Campsite.find()
     .then(campsites => {
         res.statusCode = 200;
