@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const Partners = require("../models/partner");
 const authenticate = require("../authenticate");
+const cors = require('./cors');
 
 const partnerRouter = express.Router();
 
@@ -10,7 +11,8 @@ partnerRouter.use(bodyParser.json());
 partnerRouter.route("/");
 partnerRouter
   .route("/")
-  .get(authenticate.verifyUser, (req, res, next) => {
+  .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+  .get(cors.cors, (req, res, next) => {
     Partners.find()
      
       .then((partners) => {
@@ -20,7 +22,7 @@ partnerRouter
       })
       .catch((err) => next(err));
   })
-  .post(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+  .post(cors.corsWithOptions,authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Partners.create(req.body)
       .then((partner) => {
         console.log("Partners Created ", partner);
@@ -30,11 +32,11 @@ partnerRouter
       })
       .catch((err) => next(err));
   })
-  .put(authenticate.verifyUser, (req, res) => {
+  .put(cors.corsWithOptions,authenticate.verifyUser, authenticate.verifyAdmin, (req, res) => {
     res.statusCode = 403;
     res.end("PUT operation not supported on /partners");
   })
-  .delete(
+  .delete(cors.corsWithOptions,
     authenticate.verifyUser,
     authenticate.verifyAdmin,
     (req, res, next) => {
@@ -49,7 +51,8 @@ partnerRouter
   );
 partnerRouter
   .route("/:partnerId")
-  .get((req, res, next) => {
+  .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+  .get(cors.cors, (req, res, next) => {
     Partners.findById(req.params.partnerId)
       .then((partner) => {
         if (partner) {
@@ -64,11 +67,11 @@ partnerRouter
       })
       .catch((err) => next(err));
   })
-  .post(authenticate.verifyUser, (req, res, next) => {
+  .post(cors.corsWithOptions,authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     res.statusCode = 403;
     res.end("Post operation not supported on /partners");
   })
-  .put(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+  .put(cors.corsWithOptions,authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Partners.findByIdAndUpdate(
       req.params.partnerId,
       { $set: req.body },
@@ -81,7 +84,7 @@ partnerRouter
       })
       .catch((err) => next(err));
   })
-  .delete(
+  .delete(cors.corsWithOptions,
     authenticate.verifyUser,
     authenticate.verifyAdmin,
     (req, res, next) => {
